@@ -7,9 +7,7 @@
         *origin
         include_ros2_control:=true">
 
-        <!-- ros2 control include -->
         <xacro:include filename="$(find robotiq_description)/urdf/2f_85.ros2_control.xacro" />
-        <!-- if we are simulating or directly communicating with the gripper we need a ros2 control instance -->
         <xacro:if value="${include_ros2_control}">
             <xacro:robotiq_gripper_ros2_control
                 name="${name}" prefix="${prefix}"/>
@@ -279,7 +277,6 @@
             <origin xyz="-0.00563134 0.0 0.04718515" rpy="0 0 0" />
             <mimic joint="${prefix}robotiq_85_left_knuckle_joint" />
         </joint>
-        <!-- https://github.com/ros-controls/gazebo_ros2_control/issues/173 -->
         <link name="${prefix}dummy_child1"/>
         <link name="${prefix}dummy_child2"/>
         <link name="${prefix}dummy_child3"/>
@@ -305,24 +302,5 @@
             <parent link="${prefix}robotiq_85_base_link" />
             <child link="${prefix}dummy_child5" />
         </joint>
-        <!-- grasp fix -->
-        <!-- <gazebo>
-            <plugin name="${prefix}gazebo_grasp_fix" filename="libgazebo_grasp_fix.so">
-                 <arm>
-                    <arm_name>${prefix}robotiq_gripper_arm</arm_name>
-                    <palm_link>${prefix}robotiq_85_left_inner_knuckle_link</palm_link>
-                    <gripper_link>${prefix}robotiq_85_left_finger_tip_link</gripper_link>
-                    <palm_link>${prefix}robotiq_85_right_inner_knuckle_link</palm_link>
-                    <gripper_link>${prefix}robotiq_85_right_finger_tip_link</gripper_link>
-                 </arm>
-                <forces_angle_tolerance>100</forces_angle_tolerance>
-                <update_rate>2</update_rate>
-                <grip_count_threshold>1</grip_count_threshold>
-                <max_grip_count>2</max_grip_count>
-                <release_tolerance>0.005</release_tolerance>
-                <disable_collisions_on_attach>true</disable_collisions_on_attach>
-                <contact_topic>__default_topic__</contact_topic>
-             </plugin>
-         </gazebo> -->
     </xacro:macro>
 </robot>

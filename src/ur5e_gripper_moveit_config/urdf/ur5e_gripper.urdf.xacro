@@ -2,18 +2,14 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur5e_gripper">
 
     <xacro:arg name="initial_positions_file" default="$(find ur5e_gripper_moveit_config)/config/initial_positions.yaml"/>
-    <!-- Root link -->
     <link name="world"/>
 
-    <!-- Xacro imports -->
     <xacro:include filename="single_ur5e_gripper.urdf.xacro" />
 
-    <!--  arm -->
     <xacro:ur5e_gripper name="ur" prefix="" parent="world" initial_positions_file="$(arg initial_positions_file)">
         <origin xyz="0.3 0 1.03" rpy="0 0 0" />
     </xacro:ur5e_gripper>
 
-    <!-- realsense d435 -->
     <xacro:arg name="use_nominal_extrinsics" default="true"/>
     <xacro:arg name="add_plug" default="false" />
     <xacro:arg name="use_mesh" default="true" />
@@ -37,8 +33,6 @@
                 <gripper_link>robotiq_85_right_finger_tip_link</gripper_link>
                 <gripper_link>robotiq_85_left_knuckle_link</gripper_link>
                 <gripper_link>robotiq_85_right_knuckle_link</gripper_link>
-                <!-- <gripper_link>robotiq_85_left_finger_link</gripper_link>
-                <gripper_link>robotiq_85_right_finger_link</gripper_link> -->
                 <gripper_link>robotiq_85_left_inner_knuckle_link</gripper_link>
                 <gripper_link>robotiq_85_right_inner_knuckle_link</gripper_link>
             </arm>

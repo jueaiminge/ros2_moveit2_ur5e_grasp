@@ -1,13 +1,10 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:macro name="ur5e_gripper" params="name prefix parent *origin initial_positions_file" >
-        <!-- include main macro -->
         <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
         <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro" />
 
         <xacro:arg name="ur_type" default="ur5e"/>
-        <!-- parameters -->
-        <!-- <xacro:arg name="tf_prefix" default="" /> -->
         <xacro:arg name="joint_limit_params" default="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"/>
         <xacro:arg name="kinematics_params" default="$(find ur_description)/config/$(arg ur_type)/default_kinematics.yaml"/>
         <xacro:arg name="physical_params" default="$(find ur_description)/config/$(arg ur_type)/physical_parameters.yaml"/>
@@ -16,7 +13,6 @@
         <xacro:arg name="safety_limits" default="false"/>
         <xacro:arg name="safety_pos_margin" default="0.15"/>
         <xacro:arg name="safety_k_position" default="20"/>
-        <!-- ros2_control related parameters -->
         <xacro:arg name="headless_mode" default="false" />
         <xacro:arg name="robot_ip" default="0.0.0.0" />
         <xacro:arg name="script_filename" default=""/>
@@ -27,7 +23,6 @@
         <xacro:arg name="reverse_port" default="50001"/>
         <xacro:arg name="script_sender_port" default="50002"/>
         <xacro:arg name="trajectory_port" default="50003"/>
-        <!--   tool communication related parameters-->
         <xacro:arg name="use_tool_communication" default="false" />
         <xacro:arg name="tool_voltage" default="0" />
         <xacro:arg name="tool_parity" default="0" />
@@ -38,17 +33,14 @@
         <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
         <xacro:arg name="tool_tcp_port" default="54321" />
 
-        <!-- Simulation parameters -->
         <xacro:arg name="use_fake_hardware" default="false" />
         <xacro:arg name="fake_sensor_commands" default="false" />
         <xacro:arg name="sim_gazebo" default="true" />
         <xacro:arg name="sim_ignition" default="false" />
         <xacro:arg name="simulation_controllers" default="" />
 
-        <!-- convert to property to use substitution in function -->
         <xacro:property name="initial_positions_file" default="${initial_positions_file}"/>
 
-        <!-- arm -->
         <xacro:ur_robot name="${name}" 
             tf_prefix="${prefix}" 
             parent="${parent}" 
@@ -85,10 +77,8 @@
             script_sender_port="$(arg script_sender_port)" 
             trajectory_port="$(arg trajectory_port)">
             <xacro:insert_block name="origin" />
-            <!-- position robot in the world -->
         </xacro:ur_robot>
 
-        <!-- gripper -->
         <xacro:robotiq_gripper name="${name}_gripper" prefix="${prefix}" parent="${prefix}tool0">
             <origin xyz="0 0 0" rpy="0 0 0" />
         </xacro:robotiq_gripper>
