@@ -46,8 +46,8 @@ def launch_setup(context, *args, **kwargs):
     nodes_to_launch = [
         dual_ur5e_gripper_control_launch,
         dual_ur5e_gripper_moveit_launch,
-        register_depth_launch,
-        vision_launch,
+        # register_depth_launch,
+        # vision_launch,
         # octo_launch,
     ]
 

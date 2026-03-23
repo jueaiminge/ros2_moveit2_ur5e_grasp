@@ -76,6 +76,18 @@ def launch_setup(context, *args, **kwargs):
         arguments=["gripper_controller", "-c", "/controller_manager"],
     )
 
+    right_ur5e_arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_ur5e_arm_controller", "-c", "/controller_manager"],
+    )
+
+    right_robotiq_gripper_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_gripper_controller", "-c", "/controller_manager"],
+    )
+
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [FindPackageShare("gazebo_ros"), "/launch", "/gazebo.launch.py"]
@@ -105,7 +117,12 @@ def launch_setup(context, *args, **kwargs):
     delay_arm_and_gripper_after_joint_state_broadcaster = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=joint_state_broadcaster_spawner,
-            on_exit=[ur5e_arm_controller_spawner, robotiq_gripper_controller_spawner],
+            on_exit=[
+                ur5e_arm_controller_spawner,
+                robotiq_gripper_controller_spawner,
+                right_ur5e_arm_controller_spawner,
+                right_robotiq_gripper_controller_spawner,
+            ],
         )
     )
 

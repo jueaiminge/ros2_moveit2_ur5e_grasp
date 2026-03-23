@@ -65,6 +65,18 @@ def generate_launch_description():
         arguments=["gripper_controller", "-c", "/controller_manager"],
     )
 
+    right_ur5e_arm_controller_spawner = launch_ros.actions.Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_ur5e_arm_controller", "-c", "/controller_manager"],
+    )
+
+    right_robotiq_gripper_controller_spawner = launch_ros.actions.Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_gripper_controller", "-c", "/controller_manager"],
+    )
+
 
     return LaunchDescription([
         gazebo,
@@ -73,4 +85,6 @@ def generate_launch_description():
         joint_state_broadcaster_spawner,
         ur5e_arm_controller_spawner,
         robotiq_gripper_controller_spawner,
+        right_ur5e_arm_controller_spawner,
+        right_robotiq_gripper_controller_spawner,
     ])
