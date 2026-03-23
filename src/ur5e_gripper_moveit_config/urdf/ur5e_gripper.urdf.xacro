@@ -5,13 +5,13 @@
     <link name="world"/>
 
     <xacro:include filename="single_ur5e_gripper.urdf.xacro" />
-
+    <!-- 左臂距离调整，需要根据桌子尺寸调整，不能被物理约束，否则会无法移动 -->
     <xacro:ur5e_gripper name="left_ur" prefix="" parent="world" initial_positions_file="$(arg initial_positions_file)">
-        <origin xyz="-0.275 0 1.03" rpy="0 0 0" />
+        <origin xyz="-0.65 0 1.016" rpy="0 0 0" />
     </xacro:ur5e_gripper>
-
+    <!-- 右臂距离调整 -->
     <xacro:ur5e_gripper name="right_ur" prefix="right_" parent="world" initial_positions_file="$(arg initial_positions_file)">
-        <origin xyz="1.075 0 1.03" rpy="0 0 3.1415926" />
+        <origin xyz="0.65 0 1.016" rpy="0 0 3.1415926" />
     </xacro:ur5e_gripper>
 
     <xacro:arg name="use_nominal_extrinsics" default="true"/>

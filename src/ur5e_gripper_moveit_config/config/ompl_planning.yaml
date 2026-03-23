@@ -70,3 +70,28 @@ ur_manipulator:
     - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
+
+right_ur_manipulator:
+  default_planner_config: RRTstarkConfigDefault
+  planning_attempts: 10
+  planning_time: 3.0
+  planner_configs:
+    - SBLkConfigDefault
+    - ESTkConfigDefault
+    - LBKPIECEkConfigDefault
+    - BKPIECEkConfigDefault
+    - KPIECEkConfigDefault
+    - RRTkConfigDefault
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+    - TRRTkConfigDefault
+    - PRMkConfigDefault
+    - PRMstarkConfigDefault
+
+dual_arms:
+  default_planner_config: RRTConnectkConfigDefault
+  planning_attempts: 5
+  planning_time: 5.0
+  planner_configs:
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
