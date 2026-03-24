@@ -1,12 +1,22 @@
-sensors:  
-  - point_cloud_camera
+# Visual perception is disabled for the current simulation setup.
+# Keep the old point cloud updater settings commented here for later reuse.
+/**:
+  ros__parameters: {}
 
-point_cloud_camera:
-    sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
-    point_cloud_topic: /depth/points_filtered
-    max_range: 5.0
-    point_subsample: 1
-    padding_offset: 0.05
-    padding_scale: 1.0
-    max_update_rate: 1.0
-    filtered_cloud_topic: filtered_cloud
+# Example configuration when a point cloud sensor is available:
+# /**:
+#   ros__parameters:
+#     sensors:
+#       - point_cloud_camera
+#     point_cloud_camera:
+#       sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+#       point_cloud_topic: /depth/points_filtered
+#       max_range: 5.0
+#       point_subsample: 1
+#       padding_offset: 0.05
+#       padding_scale: 1.0
+#       max_update_rate: 1.0
+#       filtered_cloud_topic: filtered_cloud
+#
+# Do not set `sensors: []` here. ROS 2 cannot infer a type for an empty
+# parameter array, which makes move_group fail during startup.

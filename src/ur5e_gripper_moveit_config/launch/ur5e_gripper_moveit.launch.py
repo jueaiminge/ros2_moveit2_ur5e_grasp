@@ -94,9 +94,10 @@ def launch_setup(context, *args, **kwargs):
         "publish_robot_description":True,
         "publish_robot_description_semantic":True,
     }
+    sensors_3d_config = PathJoinSubstitution(
+        [FindPackageShare(moveit_config_package), "config", "sensors_3d.yaml"]
+    )
 
-    octomap_config = {'octomap_frame': 'camera_depth_optical_frame', 'octomap_resolution': 0.02}
-    octomap_updater_config = load_yaml('ur5e_gripper_moveit_config', 'config/sensors_3d.yaml')    
     # Start the actual move_group node/action server
     move_group_node = Node(
         package="moveit_ros_move_group",
@@ -112,8 +113,7 @@ def launch_setup(context, *args, **kwargs):
             moveit_controllers,
             planning_scene_monitor_parameters,
             {"use_sim_time": use_sim_time},
-            octomap_config,
-            octomap_updater_config,
+            sensors_3d_config,
         ],
     )
 
