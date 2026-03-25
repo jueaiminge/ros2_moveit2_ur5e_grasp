@@ -1,0 +1,36 @@
+/**:
+  ros__parameters:
+    world_frame: world  # 全部位姿和碰撞物体默认使用的参考坐标系
+    object_id: blue_box  # MoveIt 规划场景中木块的碰撞对象名称
+    table_id: table  # MoveIt 规划场景中桌面的碰撞对象名称
+    arm_group: ur_manipulator  # 左臂在 SRDF/MoveIt 中的规划组名称
+    hand_group: gripper  # 左夹爪在 SRDF/MoveIt 中的规划组名称
+    hand_frame: tool0  # 左臂末端执行器参考 link，抓取/放置位姿都对齐到该坐标系
+    home_pose_name: ready  # 左臂的命名初始位姿/收纳位姿名称
+    source_position: [0.1, 0.1, 1.04]  # 木块初始中心点世界坐标 [x, y, z]
+    target_position: [-0.15, -0.25, 1.06]  # 木块放置目标中心点世界坐标 [x, y, z]
+    object_size: [0.05, 0.05, 0.05]  # 木块碰撞盒尺寸 [长, 宽, 高]
+    table_position: [0.0, 0.0, 1.0]  # 桌面碰撞盒中心点世界坐标 [x, y, z]
+    table_size: [1.8, 0.8, 0.03]  # 桌面碰撞盒尺寸 [长, 宽, 厚]
+    source_position_offset: [0.0, 0.0, 0.0]  # 抓取点相对木块中心的修正偏移 [x, y, z]，用于微调夹爪与木块对齐
+    grasp_height_offset: 0.14  # 夹爪 TCP 相对木块中心的抓取高度偏移，决定“真正夹取位”高度
+    pregrasp_offset: 0.06  # 预抓取位到抓取位的直线距离，当前实现中沿 TCP 的接近方向移动
+    lift_distance: 0.12  # 抓住木块后向上抬升的距离
+    retreat_distance: 0.08  # 放下木块并松爪后向上撤离的距离
+    planning_time: 10.0  # 单次采样规划允许使用的最长时间，越大越容易找到路径但会更慢
+    planning_attempts: 10  # 单个目标位姿的采样规划尝试次数
+    planner_id: RRTConnectkConfigDefault  # 使用的 OMPL 规划器 ID，当前用 RRTConnect 减少绕远路
+    max_velocity_scaling: 0.3  # 轨迹执行的最大速度缩放系数，范围通常为 0~1
+    max_acceleration_scaling: 0.3  # 轨迹执行的最大加速度缩放系数，范围通常为 0~1
+    cartesian_eef_step: 0.01  # 笛卡尔路径插值步长，越小越精细但计算更慢
+    cartesian_jump_threshold: 0.0  # 笛卡尔路径关节跳变阈值，0.0 表示关闭该限制
+    cartesian_min_fraction: 0.95  # 笛卡尔路径最小可接受完成比例，低于该值就判定该段失败
+    pick_yaw_candidates: [0.0, 1.57079632679, -1.57079632679]  # 抓取时末端绕竖直轴尝试的候选偏航角（弧度）
+    place_yaw: 0.0  # 放置时末端使用的固定偏航角（弧度）
+    workspace_margin_xy: 0.0  # 在桌面边界外额外放宽的 XY 工作空间裕量，避免轨迹跑太远
+    workspace_min_z: 0.95  # 左臂规划允许的工作空间最小 z，高于桌面以下的无意义区域
+    workspace_max_z: 1.75  # 左臂规划允许的工作空间最大 z，限制机械臂过高抬起
+    gripper_open_position: 0.0  # 夹爪张开时发送给 gripper action 的目标位置
+    gripper_closed_position: 0.36  # 夹爪闭合抓取时发送给 gripper action 的目标位置
+    ignore_right_arm_collisions: false  # 是否在单臂抓取时忽略左臂与右臂之间的碰撞
+    return_home_after_place: true  # 放置完成后是否自动回到 home_pose_name 对应的命名位姿
