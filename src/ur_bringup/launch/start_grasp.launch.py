@@ -13,12 +13,10 @@ def launch_setup(context, *args, **kwargs):
             [FindPackageShare("ur5e_gripper_control"), "/launch", "/simple_pick_place.launch.py"]
         ),
         launch_arguments={
-            "target_x": LaunchConfiguration("target_x"),
-            "target_y": LaunchConfiguration("target_y"),
-            "target_z": LaunchConfiguration("target_z"),
-            "pick_offset_x": LaunchConfiguration("pick_offset_x"),
-            "pick_offset_y": LaunchConfiguration("pick_offset_y"),
-            "pick_offset_z": LaunchConfiguration("pick_offset_z"),
+            "enable_master_slave_sequencing": LaunchConfiguration("enable_master_slave_sequencing"),
+            "enable_staggered_dual_arm_execution": LaunchConfiguration("enable_staggered_dual_arm_execution"),
+            "primary_start_arm": LaunchConfiguration("primary_start_arm"),
+            "secondary_start_delay": LaunchConfiguration("secondary_start_delay"),
         }.items(),
     )
 
@@ -32,12 +30,10 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     declared_arguments = [
-        DeclareLaunchArgument("target_x", default_value="-0.15", description="Target place x in world frame."),
-        DeclareLaunchArgument("target_y", default_value="-0.25", description="Target place y in world frame."),
-        DeclareLaunchArgument("target_z", default_value="1.04", description="Target place z in world frame."),
-        DeclareLaunchArgument("pick_offset_x", default_value="0.0", description="Pick offset x in world frame."),
-        DeclareLaunchArgument("pick_offset_y", default_value="0.0", description="Pick offset y in world frame."),
-        DeclareLaunchArgument("pick_offset_z", default_value="0.0", description="Pick offset z in world frame."),
+        DeclareLaunchArgument("enable_master_slave_sequencing", default_value="false"),
+        DeclareLaunchArgument("enable_staggered_dual_arm_execution", default_value="true"),
+        DeclareLaunchArgument("primary_start_arm", default_value="right"),
+        DeclareLaunchArgument("secondary_start_delay", default_value="0.8"),
     ]
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])

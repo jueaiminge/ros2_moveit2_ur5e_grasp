@@ -2,7 +2,8 @@ import os
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.conditions import IfCondition
+from launch.substitutions import Command, EnvironmentVariable, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from ur_moveit_config.launch_common import load_yaml
@@ -51,20 +52,17 @@ def launch_setup(context, *args, **kwargs):
         [FindPackageShare("ur5e_gripper_control"), "config", "simple_pick_place.yaml"]
     )
 
-    target_override = {
-        "target_position": [
-            float(LaunchConfiguration("target_x").perform(context)),
-            float(LaunchConfiguration("target_y").perform(context)),
-            float(LaunchConfiguration("target_z").perform(context)),
-        ]
+    monitor_overrides = {
+        "monitor_log_file": PathJoinSubstitution(
+            [EnvironmentVariable("HOME"), "ros2_ws", "log", "fcl_monitor", "fcl_monitor.csv"]
+        ),
     }
 
-    source_offset_override = {
-        "source_position_offset": [
-            float(LaunchConfiguration("pick_offset_x").perform(context)),
-            float(LaunchConfiguration("pick_offset_y").perform(context)),
-            float(LaunchConfiguration("pick_offset_z").perform(context)),
-        ]
+    execution_mode_overrides = {
+        "enable_master_slave_sequencing": LaunchConfiguration("enable_master_slave_sequencing"),
+        "enable_staggered_dual_arm_execution": LaunchConfiguration("enable_staggered_dual_arm_execution"),
+        "primary_start_arm": LaunchConfiguration("primary_start_arm"),
+        "secondary_start_delay": float(LaunchConfiguration("secondary_start_delay").perform(context)),
     }
 
     simple_pick_place_node = Node(
@@ -79,22 +77,38 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             robot_description_planning,
             parameter_file,
-            target_override,
-            source_offset_override,
+            monitor_overrides,
+            execution_mode_overrides,
         ],
     )
 
-    return [simple_pick_place_node]
+    fcl_safety_monitor_node = Node(
+        package="ur5e_gripper_control",
+        executable="fcl_safety_monitor",
+        name="fcl_safety_monitor",
+        output="screen",
+        condition=IfCondition(LaunchConfiguration("enable_fcl_monitor")),
+        parameters=[
+            {"use_sim_time": use_sim_time},
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            robot_description_planning,
+            parameter_file,
+            monitor_overrides,
+        ],
+    )
+
+    return [simple_pick_place_node, fcl_safety_monitor_node]
 
 
 def generate_launch_description():
     declared_arguments = [
-        DeclareLaunchArgument("target_x", default_value="-0.15", description="Target place x in world frame."),
-        DeclareLaunchArgument("target_y", default_value="-0.25", description="Target place y in world frame."),
-        DeclareLaunchArgument("target_z", default_value="1.04", description="Target place z in world frame."),
-        DeclareLaunchArgument("pick_offset_x", default_value="-0.012", description="Pick offset x in world frame."),
-        DeclareLaunchArgument("pick_offset_y", default_value="0.004", description="Pick offset y in world frame."),
-        DeclareLaunchArgument("pick_offset_z", default_value="0.0", description="Pick offset z in world frame."),
+        DeclareLaunchArgument("enable_master_slave_sequencing", default_value="false"),
+        DeclareLaunchArgument("enable_staggered_dual_arm_execution", default_value="true"),
+        DeclareLaunchArgument("primary_start_arm", default_value="right"),
+        DeclareLaunchArgument("secondary_start_delay", default_value="0.8"),
+        DeclareLaunchArgument("enable_fcl_monitor", default_value="true"),
         DeclareLaunchArgument("description_package", default_value="ur5e_gripper_moveit_config"),
         DeclareLaunchArgument("description_file", default_value="ur5e_gripper.urdf.xacro"),
         DeclareLaunchArgument("moveit_config_package", default_value="ur5e_gripper_moveit_config"),

@@ -1,12 +1,13 @@
 /**:
   ros__parameters:
     world_frame: world  # 全部位姿和碰撞物体默认使用的参考坐标系
-    object_id: blue_box  # MoveIt 规划场景中木块的碰撞对象名称
+    object_id: blue_box  # 左臂抓取物体在 MoveIt 规划场景中的碰撞对象名称
     table_id: table  # MoveIt 规划场景中桌面的碰撞对象名称
     arm_group: ur_manipulator  # 左臂在 SRDF/MoveIt 中的规划组名称
     hand_group: gripper  # 左夹爪在 SRDF/MoveIt 中的规划组名称
     hand_frame: tool0  # 左臂末端执行器参考 link，抓取/放置位姿都对齐到该坐标系
     home_pose_name: ready  # 左臂的命名初始位姿/收纳位姿名称
+    gripper_action_name: /gripper_controller/gripper_cmd  # 左夹爪控制 action
     source_position: [0.1, 0.1, 1.04]  # 木块初始中心点世界坐标 [x, y, z]
     target_position: [-0.15, -0.25, 1.06]  # 木块放置目标中心点世界坐标 [x, y, z]
     object_size: [0.05, 0.05, 0.05]  # 木块碰撞盒尺寸 [长, 宽, 高]
@@ -17,8 +18,8 @@
     pregrasp_offset: 0.06  # 预抓取位到抓取位的直线距离，当前实现中沿 TCP 的接近方向移动
     lift_distance: 0.12  # 抓住木块后向上抬升的距离
     retreat_distance: 0.08  # 放下木块并松爪后向上撤离的距离
-    planning_time: 10.0  # 单次采样规划允许使用的最长时间，越大越容易找到路径但会更慢
-    planning_attempts: 10  # 单个目标位姿的采样规划尝试次数
+    planning_time: 8.0  # 单次采样规划允许使用的最长时间，越大越容易找到路径但会更慢
+    planning_attempts: 8  # 单个目标位姿的采样规划尝试次数
     planner_id: RRTConnectkConfigDefault  # 使用的 OMPL 规划器 ID，当前用 RRTConnect 减少绕远路
     max_velocity_scaling: 0.3  # 轨迹执行的最大速度缩放系数，范围通常为 0~1
     max_acceleration_scaling: 0.3  # 轨迹执行的最大加速度缩放系数，范围通常为 0~1
@@ -27,10 +28,71 @@
     cartesian_min_fraction: 0.95  # 笛卡尔路径最小可接受完成比例，低于该值就判定该段失败
     pick_yaw_candidates: [0.0, 1.57079632679, -1.57079632679]  # 抓取时末端绕竖直轴尝试的候选偏航角（弧度）
     place_yaw: 0.0  # 放置时末端使用的固定偏航角（弧度）
-    workspace_margin_xy: 0.0  # 在桌面边界外额外放宽的 XY 工作空间裕量，避免轨迹跑太远
-    workspace_min_z: 0.95  # 左臂规划允许的工作空间最小 z，高于桌面以下的无意义区域
-    workspace_max_z: 1.75  # 左臂规划允许的工作空间最大 z，限制机械臂过高抬起
+    place_yaw_candidates: [0.0]  # 左臂放置段候选偏航角，默认保持单一姿态
+    workspace_min_x: -0.55  # 双臂公共工作空间最小 x，仍限制在桌面上方，但给侧向避让与恢复位留出必要余量
+    workspace_max_x: 0.55  # 双臂公共工作空间最大 x，仍限制在桌面上方，但给侧向避让与恢复位留出必要余量
+    workspace_min_y: -0.35  # 双臂公共工作空间最小 y，保持在桌面有效区域内，同时避免恢复位被边界卡死
+    workspace_max_y: 0.35  # 双臂公共工作空间最大 y，保持在桌面有效区域内，同时避免恢复位被边界卡死
+    workspace_min_z: 1.02  # 工作空间最小 z 抬到桌面以上，避免机械臂下探到桌面以下的无效区域
+    workspace_max_z: 1.65  # 工作空间最大 z 收紧，避免机械臂为绕障碍抬得过高
     gripper_open_position: 0.0  # 夹爪张开时发送给 gripper action 的目标位置
     gripper_closed_position: 0.36  # 夹爪闭合抓取时发送给 gripper action 的目标位置
     ignore_right_arm_collisions: false  # 是否在单臂抓取时忽略左臂与右臂之间的碰撞
     return_home_after_place: true  # 放置完成后是否自动回到 home_pose_name 对应的命名位姿
+    enable_master_slave_sequencing: false  # 最保守的整段左先右后模式；默认关闭，优先使用并发+关键段局部退让恢复
+    move_master_home_before_slave_resume: true  # 仅整段左先右后模式下生效：左臂完成后是否先回 home，再恢复右臂任务
+    enable_staggered_dual_arm_execution: true  # 默认启用右先左后的错峰并发，让右臂先起步，左臂稍后跟进
+    primary_start_arm: right  # 错峰并发时先启动的机械臂，当前需求为右臂先动
+    secondary_start_delay: 0.8  # 左臂相对右臂的默认延迟，避免起步就抢占中间共享空间
+    right_object_id: red_box  # 右臂抓取物体在 MoveIt 规划场景中的碰撞对象名称
+    right_arm_group: right_ur_manipulator  # 右臂在 SRDF/MoveIt 中的规划组名称
+    right_hand_group: right_gripper  # 右夹爪在 SRDF/MoveIt 中的规划组名称
+    right_hand_frame: right_tool0  # 右臂末端执行器参考 link
+    right_home_pose_name: right_ready  # 右臂的安全待命命名位姿
+    right_gripper_action_name: /right_gripper_controller/gripper_cmd  # 右夹爪控制 action
+    right_source_position: [-0.1, 0.1, 1.04]  # 右臂抓取红色木块的世界坐标 [x, y, z]
+    right_target_position: [0.15, -0.25, 1.06]  # 右臂放置红色木块的目标世界坐标 [x, y, z]
+    right_source_position_offset: [0.0, 0.0, 0.0]  # 右臂抓取点相对红色木块中心的修正偏移
+    right_pick_yaw_candidates: [0.0, 1.57079632679, -1.57079632679]  # 右臂抓取候选偏航角（弧度）
+    right_place_yaw: 0.0  # 右臂放置时末端使用的固定偏航角（弧度）
+    right_place_yaw_candidates: [0.0, 1.57079632679, -1.57079632679]  # 右臂放置段候选偏航角，规划失败时自动换姿态重试
+    enable_fcl_monitor_publisher: true  # 是否在每段轨迹执行前发布监控用 DisplayTrajectory
+    monitor_trajectory_topic: /fcl_monitor/display_trajectory  # 抓取节点与监控节点共享的执行轨迹话题
+    monitor_risk_topic: /fcl_monitor/risk_state  # 监控节点向执行节点反馈风险等级的轻量话题
+    monitor_trajectory_publish_lead_time: 0.15  # 轨迹发布后等待多久再真正执行，给监控节点和恢复逻辑留更充足的反应时间
+    enable_monitor_risk_replan: true  # 第三阶段雏形：右臂执行时收到高风险反馈后自动停止并重规划
+    monitor_risk_timeout: 0.8  # 执行节点接受监控风险消息的最大有效时长，适当放宽以覆盖更长的等待/恢复窗口
+    max_right_arm_replan_attempts: 5 # 右臂单段因风险中断后允许的最大重规划次数
+    enable_right_local_wait_recovery: true  # 右臂收到 stop/replan 后，先退到局部等待位，再让左臂过当前关键段
+    right_local_wait_pose_name: right_local_wait  # 右臂专用命名等待位；恢复时优先尝试这个稳定姿态
+    right_local_wait_lift_distance: 0.08  # 右臂进入局部等待位前，先沿世界 z 方向抬高的退让距离
+    right_local_wait_position_offset: [-0.10, 0.08, 0.0]  # 在抬高后的当前 TCP 位姿基础上附加的局部等待位偏移 [x, y, z]，默认向右臂外侧横向退让
+    right_local_wait_planning_delay_sec: 0.45  # 右臂被监控中断后，先留一个更稳的状态收敛窗口，再规划 local wait
+    left_priority_clear_position_offset: [0.10, 0.08, 0.0]  # 左臂完成 priority lift 后再向自身外侧/后方小退一步，给右臂从等待位续跑腾空间
+    right_resume_planning_delay_sec: 0.35  # 右臂到达等待位后，额外留给 MoveIt 和状态同步的续跑重规划缓冲时间
+    warn_velocity_scale: 0.15  # warn 级别下右臂重执行时采用的速度缩放
+    warn_acceleration_scale: 0.15  # warn 级别下右臂重执行时采用的加速度缩放
+    max_named_target_retries: 3  # ready/right_ready 等命名位姿的最大重试次数
+    right_replan_fallback_to_home: true  # 局部等待位和续跑都不稳时，是否退回右臂 home 作为最保守兜底
+    master_arm_group: ur_manipulator  # 主从优先级中的主臂，当前按需求固定为左臂
+    prediction_horizon: 1.0  # 从当前执行轨迹向前预测的时间窗长度（秒），拉长以便给停机/让行/重规划留提前量
+    prediction_sampling_step: 0.025  # 时间窗内的离散采样步长（秒），加密采样避免漏掉短时靠近
+    monitor_period: 0.05  # FCL 监控主循环周期（秒），提升到约 20Hz 以更快发现风险
+    required_state_max_age: 1.0  # 参与 FCL 检查前要求 joint_state 至多滞后多久（秒）
+    warn_distance: 0.22 # 进入告警级别的最小距离阈值 d_min（米），提前开始给右臂降速/准备让行
+    stop_distance: 0.14  # 进入 stop 级别的距离阈值（米），提高处理空间，尽量避免缠绕后才介入
+    collision_distance: 0.0  # 判定已经进入碰撞状态的距离阈值（米）
+    distance_request_threshold: 0.25  # FCL 距离查询的截断阈值，超过该距离就不再细算
+    max_contacts: 4  # 单次碰撞检查保留的最大接触数量，用于记录穿透深度
+    console_log_every_n_cycles: 10  # 每多少个监控周期向终端打印一次汇总日志
+    console_log_on_change_only: true  # 终端仅在风险摘要变化时打印，避免重复刷屏
+    ignored_monitor_pairs: [base_link_inertia|table, right_base_link_inertia|table, base_link_inertia|upper_arm_link, right_base_link_inertia|right_upper_arm_link]  # 保守忽略的已知噪声 pair，仅用于监控降噪
+    monitor_log_file: /tmp/ur5e_fcl_monitor.csv  # FCL 实时检测 CSV 日志文件路径
+    planning_scene_service: /get_planning_scene  # 监控节点拉取完整 PlanningScene 的服务名
+    planning_scene_topic: /planning_scene  # 监控节点订阅的 PlanningScene 更新话题
+    planning_scene_world_topic: /planning_scene_world  # 世界几何体更新话题
+    collision_object_topic: /collision_object  # 碰撞物体更新话题
+    joint_states_topic: /joint_states  # 机器人关节状态话题
+    attached_collision_object_topic: /attached_collision_object  # 附着物体更新话题
+    monitor_state_update_frequency: 60.0  # 将 MoveIt 当前状态同步到监控场景的最大频率（Hz），减少状态滞后
+    load_octomap_monitor: false  # 当前桌面抓取场景先关闭 octomap 监听，减小开销

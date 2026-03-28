@@ -22,6 +22,10 @@ find_package(control_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 find_package(tf2 REQUIRED)
 
@@ -39,11 +43,24 @@ ament_target_dependencies(simple_pick_place
   moveit_msgs
   geometry_msgs
   shape_msgs
+  std_msgs
   control_msgs
   moveit_ros_planning
   moveit_ros_planning_interface)
 
-install(TARGETS demo simple_pick_place
+add_executable(fcl_safety_monitor src/fcl_safety_monitor.cpp)
+ament_target_dependencies(fcl_safety_monitor
+  rclcpp
+  tf2
+  tf2_ros
+  sensor_msgs
+  std_msgs
+  trajectory_msgs
+  moveit_core
+  moveit_msgs
+  moveit_ros_planning)
+
+install(TARGETS demo simple_pick_place fcl_safety_monitor
   DESTINATION lib/${PROJECT_NAME}
 )
 
